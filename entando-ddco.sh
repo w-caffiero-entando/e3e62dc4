@@ -1,8 +1,9 @@
 #!/bin/bash
 
-[ "$1" == "" ] && echo "please provide the namespace name" 1>&2 && exit 1
-
 NS="$1"
+[ "$NS" == "" ] && NS="$ENTANDO_NAMESPACE"
+[ "$NS" == "" ] && echo "please provide the namespace name" 1>&2 && exit 1
+
 
 mkdir -p tmp
 cd tmp
