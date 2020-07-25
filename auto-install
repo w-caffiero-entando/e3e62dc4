@@ -1,0 +1,40 @@
+#!/bin/bash
+[ -z $ZSH_VERSION ] && [ -z $BASH_VERSION ] && echo "Unsupported shell, user either bash or zsh" 1>&2 && return 99
+
+VER="$1"
+[ "$VER" == "" ] && VER="$ENT_VERSION"
+[ "$VER" == "" ] && echo "please provide the version via paramenter or enviroment var \"ENT_VERSION\"" 1>&2 && exit 1
+
+[ -d "$HOME/.entando/ent/$VER" ] && echo "Destination dir \"$HOME/.entando/ent/$VER\" already exists, remove it an try again if you want to reinstall it" 1>&2 && exit 1
+
+git --version
+[ $? -ne 0 ] && echo "please install git" 1>&2 && exit 99
+
+cd "$HOME"
+
+set -e
+
+mkdir -p ".entando/ent"
+cd ".entando/ent"
+
+git clone https://github.com/w-caffiero-entando/e3e62dc4.git "$VER"
+cd "$VER"
+git checkout -b "$VER" origin/"$VER" 1>/dev/null
+
+echo "."
+echo ".."
+echo "============================================================"
+echo "ENT INSTALLED."
+echo ""
+echo "Activate using command:"
+echo ""
+echo -e "\tsource $HOME/.entando/ent/$VER/activate"
+echo ""
+echo "Then get help using this command:"
+echo ""
+echo -e "\tent-help.sh"
+echo ""
+echo "============================================================"
+echo ".."
+echo "."
+echo ""

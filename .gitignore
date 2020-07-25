@@ -1,1 +1,6 @@
 w/
+lib/
+.xdev
+.kdev4
+*.kdev4
+*.swp

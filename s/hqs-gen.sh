@@ -4,10 +4,14 @@ cd "$DIR/.."
 
 . s/_base.sh
 
-set -e
+set -e 
+[ "$1" == "force" ] && {
+  [ -d "d/crd" ] && rm -rf "d/crd"
+  [ -f "d/$DEPL_SPEC_YAML_FILE.tpl" ] && rm "d/$DEPL_SPEC_YAML_FILE.tpl"
+  shift
+}
 
 reload_cfg
-
 
 # CHECKS
 CURRENT_HELM_VERSION=$(helm version --client | sed 's/.*SemVer:"\([^"]*\)".*/\1/')
@@ -16,11 +20,28 @@ CURRENT_HELM_VERSION=$(helm version --client | sed 's/.*SemVer:"\([^"]*\)".*/\1/
 # CUSTOM MODEL
 cp -i -r "w/hqs/$REPO_CUSTOM_MODEL_DIR/src/main/resources/crd/" "d"
 
-# SPECIFICATION
+# SPECIFICATION FOR OPENSHIFT
 cd "w/hqs/$REPO_QUICKSTART_DIR"
-IP=$(hostname -I | awk '{print $1}')
-sed "s/supportOpenshift:.*/supportOpenshift: false/" values.yaml.tpl > values.yaml
-helm template "$ENTANDO_APP_NAME" --namespace="$ENTANDO_NAMESPACE" ./ > "$DEPL_SPEC_YAML_FILE"
+
+cat values.yaml.tpl \
+  | sed "s/supportOpenshift:.*$/supportOpenshift: true/" \
+  | sed "s/name:.*/name: ##ENTANDO_APPNAME##/" \
+  > values.yaml
+
+helm template "PLACEHOLDER_ENTANDO_APPNAME" --namespace="PLACEHOLDER_ENTANDO_NAMESPACE" ./ > "$DEPL_SPEC_YAML_FILE"
+
+cd "$DIR/.."
+mv "w/hqs/$REPO_QUICKSTART_DIR/$DEPL_SPEC_YAML_FILE" "d/$DEPL_SPEC_YAML_FILE.OKD.tpl"
+
+# SPECIFICATION NON-OPENSHIFT
+cd "w/hqs/$REPO_QUICKSTART_DIR"
+
+cat values.yaml.tpl \
+  | sed "s/supportOpenshift:.*$/supportOpenshift: false/" \
+  | sed "s/name:.*/name: PLACEHOLDER_ENTANDO_APPNAME/" \
+  > values.yaml
+  
+helm template "PLACEHOLDER_ENTANDO_APPNAME" --namespace="PLACEHOLDER_ENTANDO_NAMESPACE" ./ > "$DEPL_SPEC_YAML_FILE"
 
 cd "$DIR/.."
 mv "w/hqs/$REPO_QUICKSTART_DIR/$DEPL_SPEC_YAML_FILE" "d/$DEPL_SPEC_YAML_FILE.tpl"

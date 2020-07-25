@@ -6,18 +6,6 @@ cd "$DIR/.."
 
 set -e
 
-NS="$1"
-[ "$NS" == "" ] && NS="$ENTANDO_NAMESPACE"
-[ "$NS" == "" ] && echo "please provide the namespace name" 1>&2 && exit 1
-shift
-
-AN="$1"
-[ "$AN" == "" ] && AN="$ENTANDO_APPNAME"
-[ "$AN" == "" ] && echo "please provide the app name" 1>&2 && exit 1
-
-save_cfg_value "ENTANDO_NAMESPACE" "$NS"
-save_cfg_value "ENTANDO_APP_NAME" "$AN"
-
 # PREREQ
 mkdir -p w
 mkdir w/hqs
