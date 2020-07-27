@@ -42,9 +42,9 @@ echo -e "  - https://www.entando.com/"
 echo -e "  - https://dev.entando.org/"
 
 echo ""
-echo "> Recommended first step:"
+echo "> ⚠ RECOMMENDED FIRST STEP ⚠ :"
 
-echo -e "  - Check the dependencies using ent-dep-check.sh"
+echo -e "  - Check the dependencies (ent-env-check.sh -h full-help)"
 
 
 echo ""

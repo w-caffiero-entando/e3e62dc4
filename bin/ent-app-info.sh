@@ -19,14 +19,14 @@ $WATCH && {
   exit
 }
 
-$STATUS && { 
+$STATUS && {
   s/check-app-status.sh $ENTANDO_NAMESPACE $ENTANDO_APPNAME
   exit
 }
 
-sudo -v
+ensure_sudo
 
-_log_i 1 "NODS:"
+_log_i 1 "NODES:"
 $KUBECTL get nodes
 
 _log_i 1 "PODS:"

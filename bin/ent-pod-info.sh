@@ -11,7 +11,7 @@ POD_PATT="$1"
 shift
 
 KUBECTL="sudo k3s kubectl"
-sudo -v
+ensure_sudo
 
 for pod in $($KUBECTL get pods -n "$ENTANDO_NAMESPACE" | awk 'NR>1' | awk '{print $1}' | grep "$POD_PATT"); do
   echo -e "===\n====================================================================================================\n==="

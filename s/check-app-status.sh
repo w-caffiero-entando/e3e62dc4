@@ -22,17 +22,18 @@ RUN() {
 
 ingr_check() {
   ADDR=$(echo "$INGR" | grep "$2" | awk '{print $3}')
+  echo -n "> $1 entrypoint registered.."
+  http_check "$ADDR/$3" || true
 
-  if [ ! -z "$ADDR" ]; then
-    echo -n "> $1 entrypoint open.."
-    http_check "$ADDR/$3"
+  if [ ! -z "$ADDR" ] && [ $http_check_res != "000" ]; then
+    echo -n " open.."
     
     T="\t(http://$ADDR/$3)"
 
-    case "$?" in
-      0) echo -e " AND READY $T" && return 0;;
-      1) echo -e " but not ready yet ($http_check_res) $T" && return 1;;
-      2) echo -e " AND IN ERROR ($http_check_res) $T" && return 1;;
+    case "$http_check_res" in
+      2*|401) echo -e " AND READY $T" && return 0;;
+      000|4*|503) echo -e " but not ready ($http_check_res) $T" && return 1;;
+      5*) echo -e " AND IN ERROR ($http_check_res) $T" && return 1;;
       *) echo -e " AND IN UNEXPECTED STATUS ($http_check_res) $T" && return 1;;
     esac
   else
@@ -45,13 +46,8 @@ http_check() {
 
   case "$http_check_res" in
     2*) return 0;;
-    401) return 0;;
-    4*) return 1;;
-    5*) return 2;;
-    *) return 3;;
+    *) return 1;;
   esac
-
-  return 1  
 }
 
 RUN

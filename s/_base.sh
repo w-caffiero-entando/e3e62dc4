@@ -19,14 +19,12 @@ function backtrace() {
       n=${#FUNCNAME[@]}
       
       echo "" 2>&1
-      echo "###########################################################" 2>&1
-      echo "###########################################################" 2>&1
-      echo "###########################################################" 2>&1
-      echo -e "> Error detected\n" 2>&1
+      echo "~~~" 2>&1
+      echo -e "> Error detected in: function \"${FUNCNAME[1]}\" and position $(caller), backtrace:" 2>&1
       
-      for ((i=1; i<n; i++)); do
-          printf '%*s' "$i" ' '
-          echo "${FUNCNAME[$i]}(), ${BASH_LINENO[$((i-1))]}, line ${BASH_SOURCE[$((i-1))]}" 2>&1
+      for ((i=0; i<$((n-1)); i++)); do
+          printf '%*s' "$((i*2+2))" ' ' 2>&1
+          echo "${BASH_SOURCE[$((i))]}:${BASH_LINENO[$((i))]}" 2>&1
       done
       
       xu_set_status "EXIT"
@@ -38,6 +36,8 @@ trap backtrace ERR
 
 # UTILS
 . s/utils.sh
+. s/sys-utils.sh
+. s/var-utils.sh
 . s/logger.sh
 
 # ENVIROMENT
@@ -63,4 +63,3 @@ exit-trap() {
 }
 trap exit-trap EXIT
 
-xu_clear_status
