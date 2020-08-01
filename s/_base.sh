@@ -1,16 +1,12 @@
 [ -z $ZSH_VERSION ] && [ -z $BASH_VERSION ] && echo "Unsupported shell, user either bash or zsh" 1>&2 && exit 99
 
-[ "$ENTANDO_ENT_ACTIVE" = "" ] && echo "No instance is currently active" && exit 99
+[ "$ENTANDO_ENT_ACTIVE" = "" ] && echo "No ent instance is currently active" && exit 99
 
 nvm_activate() {
   NVM_DIR="$HOME/.nvm"
   [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" || return
   export NVM_DIR
 }
-
-# KUBECTL
-#KK="sudo kubectl"
-KK="echo sudo kubectl"
 
 # TRAPS
 function backtrace() {
@@ -40,7 +36,9 @@ trap backtrace ERR
 . s/var-utils.sh
 . s/logger.sh
 
-# ENVIROMENT
+# ENVIRONMENT
+$SYS_OS_UNKNOWN && FATAL "Unsupported operating system"
+
 mkdir -p "$ENTANDO_ENT_ACTIVE/w"
 mkdir -p "$ENTANDO_ENT_ACTIVE/d"
 mkdir -p "$ENTANDO_ENT_ACTIVE/lib"
@@ -48,12 +46,23 @@ mkdir -p "$ENTANDO_ENT_ACTIVE/lib"
 . s/_conf.sh
 
 ENT_RUN_TMP_DIR=$(mktemp /tmp/ent.run.XXXXXXXXXXXX)
+[[ ! "$ENT_RUN_TMP_DIR" =~ /tmp/ ]] && {
+  # keep this as simple as possible, only native commands
+  echo "Internal Error: Unable to create the tmp dir" 2>&1
+  exit 99
+}
 
 exit-trap() { 
   xu_get_status
-
   sz=$(stat --printf="%s" "$ENT_RUN_TMP_DIR")
-  if [ "$sz" -eq 0 ] || ( [ "$XU_RES" != "FATAL" ] && [ "$XU_RES" != "USER-ERROR" ] ); then
+
+  if [ "$sz" -eq 0 ] || { [ "$XU_RES" != "FATAL" ] && [ "$XU_RES" != "USER-ERROR" ]; }; then
+    [[ ! "$ENT_RUN_TMP_DIR" =~ /tmp/ ]] && {
+      # keep this as simple as possible, only native commands
+      echo "Internal Error: Detected invalid tmp dir" 2>&1
+      exit 99
+    }
+
     rm -rf "$ENT_RUN_TMP_DIR"
   else
     echo "---"
@@ -62,4 +71,3 @@ exit-trap() {
   fi
 }
 trap exit-trap EXIT
-

@@ -4,7 +4,7 @@
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
-cd "$DIR/.."
+cd "$DIR/.." || { echo "Internal error: unable to find the script source dir"; exit; }
 
 . s/_base.sh
 
@@ -44,7 +44,7 @@ echo -e "  - https://dev.entando.org/"
 echo ""
 echo "> ⚠ RECOMMENDED FIRST STEP ⚠ :"
 
-echo -e "  - Check the dependencies (ent-env-check.sh -h full-help)"
+echo -e "  - Check the dependencies (ent-environment-check.sh -h full-help)"
 
 
 echo ""

@@ -1,9 +1,9 @@
 #!/bin/bash
 
-if [ ! -z $BASH_VERSION ]; then
+if [ -n "$BASH_VERSION" ]; then
   DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-elif [ ! -z $ZSH_VERSION ]; then
-  DIR="$(dirname $0:A)"
+elif [ -n "$ZSH_VERSION" ]; then
+  DIR="$(dirname "$0:A")"
 else
   echo "Unsupported shell, user either bash or zsh" 1>&2 && return 99
 fi
@@ -22,12 +22,9 @@ if [[ "$sourced" == "0" ]]; then
   exit
 fi
 
-[ "$ENTANDO_ENT_ACTIVE" != "" ] && echo "An instance at location \"$ENTANDO_ENT_ACTIVE\" is already active" && return 99
+[ "$ENTANDO_ENT_ACTIVE" != "" ] && echo "An instance at location \"$ENTANDO_ENT_ACTIVE\" is already active" && return 91
 
 ENTANDO_ENT_ACTIVE="$DIR"
+export ENTANDO_ENT_ACTIVE
 PATH="$DIR/bin:$PATH"
-export PATH ENTANDO_ENT_ACTIVE
-
-hh() {
-  cd "$PWD"
-}
+export PATH

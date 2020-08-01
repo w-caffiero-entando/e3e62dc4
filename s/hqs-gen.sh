@@ -1,6 +1,6 @@
 #!/bin/bash
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-cd "$DIR/.."
+cd "$DIR/.." || { echo "Internal error: unable to find the script source dir"; exit; }
 
 . s/_base.sh
 
@@ -30,7 +30,7 @@ cat values.yaml.tpl \
 
 helm template "PLACEHOLDER_ENTANDO_APPNAME" --namespace="PLACEHOLDER_ENTANDO_NAMESPACE" ./ > "$DEPL_SPEC_YAML_FILE"
 
-cd "$DIR/.."
+cd "$DIR/.." || { echo "Internal error: unable to find the script source dir"; exit; }
 mv "w/hqs/$REPO_QUICKSTART_DIR/$DEPL_SPEC_YAML_FILE" "d/$DEPL_SPEC_YAML_FILE.OKD.tpl"
 
 # SPECIFICATION NON-OPENSHIFT
@@ -43,5 +43,5 @@ cat values.yaml.tpl \
   
 helm template "PLACEHOLDER_ENTANDO_APPNAME" --namespace="PLACEHOLDER_ENTANDO_NAMESPACE" ./ > "$DEPL_SPEC_YAML_FILE"
 
-cd "$DIR/.."
+cd "$DIR/.." || { echo "Internal error: unable to find the script source dir"; exit; }
 mv "w/hqs/$REPO_QUICKSTART_DIR/$DEPL_SPEC_YAML_FILE" "d/$DEPL_SPEC_YAML_FILE.tpl"

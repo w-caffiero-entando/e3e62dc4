@@ -3,14 +3,14 @@
 [ "$1" = "-h" ] && echo -e "Automatically execute the quickstart deployment | Syntax: ${0##*/} --destroy | --config | addr-mode namespace appname" && exit 0
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-cd "$DIR/.."
+cd "$DIR/.." || { echo "Internal error: unable to find the script source dir"; exit; }
 
 . s/_base.sh
 
 if [ "$1" == "--destroy" ]; then
   reload_cfg
   ensure_sudo
-  ask "Shoud I destroy namespace \"$ENTANDO_NAMESPACE\" and contained app \"$ENTANDO_APPNAME\" ?" && {
+  ask "Should I destroy namespace \"$ENTANDO_NAMESPACE\" and contained app \"$ENTANDO_APPNAME\" ?" && {
     $KUBECTL delete namespace "$ENTANDO_NAMESPACE"
   }
   exit
@@ -62,7 +62,7 @@ shift
 _log_i 2 "> Checking environment"
 
 $JUST_SET_CFG || {
-  . bin/ent-env-check.sh kube
+  . bin/ent-environment-check.sh kube
 }
 
 save_cfg_value "ENTANDO_NAMESPACE" "$ENTANDO_NAMESPACE"
