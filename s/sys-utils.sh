@@ -161,7 +161,7 @@ $OS_WIN && {
     while true; do
       OUT=$("$@")
       clear
-      echo -e "$@\t$USER: $(date)\n"
+      echo -e "$*\t$USER: $(date)\n"
       echo "$OUT"
       sleep 2
     done
@@ -175,3 +175,4 @@ $OS_WIN && {
 }
 
 return 0
+
