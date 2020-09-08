@@ -9,6 +9,88 @@ cd "$DIR/.." || {
 cd - > /dev/null || FATAL "internal error"
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+publish_version() {
+  push_git "$@"
+  push_docker "$@"
+}
+
+push_docker() {
+  [ -z "$DOCKER_REGISTRY_URL" ] &&  _log_d 1 "No docker registry configured, using default"
+  docker login "$DOCKER_REGISTRY_URL"
+  docker push
+}
+
+push_git() {
+  ensure_valid_location
+
+  [ "$1" == "--force" ] && {
+    shift
+    FORCE=true
+  } || FORCE=false
+
+  set_or_ask "VERSION_NUMBER" "$1" "%sp %var" "" "assert_fdn"
+  set_or_ask "VERSION_COMMENT" "$2" "%sp %var" "$VERSION_NUMBER  - $(date -u '+%Y-%m-%dT%H:%M:%S%z')" "assert_nn"
+
+  cd bundle > /dev/null || FATAL "internal error"
+
+  if [ ! "$(git status --porcelain)" ]; then
+    ask "No change detected; Should I proceed anyway?" || EXIT_UE "User interrupted"
+  else
+    git add -A
+    git commit -m "$VERSION_COMMENT"
+  fi
+
+  git fetch --tags 1> /dev/null
+
+  if git tag | grep -q -F "$VERSION_NUMBER"; then
+    if $FORCE; then
+      git tag -d "$VERSION_NUMBER" 2> /dev/null 1>&2
+    else
+      FATAL "Version \"$VERSION_NUMBER\" already exists"
+    fi
+  fi
+
+  git tag "$VERSION_NUMBER"
+
+  if $FORCE; then
+    RES="$(git push --force 2>&1)"
+    RV=$?
+  else
+    RES="$(git push 2>&1)"
+    RV=$?
+  fi
+
+  if [ $RV -ne 0 ]; then
+    if echo "$RES" | head -n 2 | grep -q -F '! [rejected]'; then
+      _log_w 1 "Unable to push to the remote repository, reason; REMOTE HISTORY NOT COMPATIBLE"
+      _log_w 1 "I'll try to fix it"
+
+      git fetch origin master \
+        && git rebase -Xtheirs origin/master
+
+      RES="$(git push 2>&1)"
+      RV=$?
+    fi
+  fi
+
+  if [ $RV -ne 0 ]; then
+    _log_e 1 "Unable to push to the remote repository, reason; $RES"
+    FATAL "Manual intervention required"
+  else
+    if echo "$RES" | head -n 2 | grep -q -F 'up-to-date'; then
+      _log_w 1 "Nothing was published: The remote repository is already up to date"
+    else
+      _log_i 1 "Version $VERSION_NUMBER published"
+    fi
+  fi
+
+  git push --tags --force 2> /dev/null
+  RV=$?
+  if [ $RV -ne 0 ]; then
+    _log_e 1 "Error pushing the version tag"
+  fi
+}
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 init_project() {
   _log_i 1 "Preparing.."
   npm link generator-jhipster-entando
@@ -99,7 +181,7 @@ init_pub() {
   initialize_publication_repository
   ensure_valid_location :initialized
 
-  _log_i 1 "bundle package repository initialized"
+  _log_i 1 "bundle publication repository initialized"
 }
 
 initialize_publication_repository() {
@@ -141,28 +223,22 @@ RUN() {
     case "$cmd" in
       "init") #H: initializes the project
         init_project
-        index_of_arg "--AND" "$@" || shift $?
         ;;
-
       "gen") #H: initializes the project
         generate_project "$@"
-        index_of_arg "--AND" "$@" || shift $?
         ;;
-
       "init-pub") #H: initializes the publication
         init_pub "$@"
-        index_of_arg "--AND" "$@" || shift $?
         ;;
-      "bump") #H: bumps a new version given the VERSION_NUMBER
-        set_nn_fdn "VERSION_NUMBER" "${1-}"
-        repo_bump
-        index_of_arg "--AND" "$@" || shift $?
+      "publish-version") #H: bumps a new version given the VERSION_NUMBER
+        publish_version "$@"
         ;;
       *)
-        H
+        H; break
         ;;
     esac
     [ -z "$1" ] && break
+    index_of_arg "--AND" "$@" || shift $?
   done
 }
 
@@ -172,7 +248,7 @@ generate_ent_project_file() {
   #  }
 
   [ -f ".ent-prj" ] && return 0
-  echo "# ENT-PRJ / $(date '+%Y-%m-%dT%H:%M:%S%z')" > ".ent-prj"
+  echo "# ENT-PRJ / $(date -u '+%Y-%m-%dT%H:%M:%S%z')" > ".ent-prj"
 }
 
 ensure_valid_location() {
@@ -189,6 +265,8 @@ ensure_valid_location() {
     cd bundle || FATAL "internal error"
 
     # git initialized
+    [ -d ".git" ] || FATAL "Publication repository is not initialized"
+
     ORIG=$(git remote get-url origin 2> /dev/null)
     [ -z "$ORIG" ] && FATAL "Repo not initialized (run \"${0##*/} init ...\")"
 
@@ -199,15 +277,20 @@ ensure_valid_location() {
     # git master branch
     if [ "$(git ls-remote origin master)" ]; then
       _log_w 1 "A remote master has been detected"
-      ask "Do you want to import it?" && {
-        (
-          _log_w 1 "Saving your change to a backup branch"
-          git checkout -b "==AUTOSAVE=$(date '+%Y-%m-%dT%H:%M:%S%z')=="
-          git add -A && git commit -m "==AUTOSAVE=$(date '+%Y-%m-%dT%H:%M:%S%z')=="
-        ) && 2> /dev/nulll
-        git fetch origin master
-        git checkout -b master
-      }
+      ask "Do you want to import it?" || FATAL "Unable to proceed; manual intervention required"
+
+      if [ "$(git status --porcelain)" ]; then
+        local BBN="__AUTOSAVE_$(date -u '+%Y-%m-%dT%H-%M-%S%z')__"
+        _log_w 1 "Saving the local changes to the backup branch: \"$BBN\""
+        git reset HEAD 2> /dev/null
+        git checkout -b "$BBN" \
+          && git add -A \
+          && git commit -m "$BBN"
+      fi
+
+      _log_d 1 "Checking out the remote master"
+      git fetch origin master
+      git checkout -b master origin/master
     else
       echo "" > .gitignore
       git add -A

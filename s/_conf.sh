@@ -22,7 +22,8 @@ C_HOSTS_FILE="/etc/hosts"
 C_BUNDLE_DESCRIPTOR_FILE_NAME="descriptor.yaml"
 
 # K3S
-KUBECTL="sudo k3s kubectl"
+#KUBECTL="sudo k3s kubectl"
+KUBECTL="sudo kubectl"
 
 # More dynamic configurations
 [ -f d/_env ] && . d/_env

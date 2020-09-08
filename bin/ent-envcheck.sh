@@ -139,7 +139,7 @@ $M_DEVL && {
 $M_DEVL && {
   check_ver "jhipster" "$VER_JHIPSTER_REQ" "-V | grep -v INFO" verbose || {
     if ask "Should I try to install it?"; then
-      npm install generator-jhipster@$VER_JHIPSTER_DEF
+      npm install -g generator-jhipster@$VER_JHIPSTER_DEF
     else
       MAYBE_FATAL "Mandatory dependency not available"
     fi

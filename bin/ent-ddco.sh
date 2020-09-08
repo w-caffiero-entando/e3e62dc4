@@ -1,4 +1,5 @@
 #!/bin/bash
+# shellcheck disable=SC2129
 
 [ "$1" = "-h" ] && echo -e "Runs some diagnostic and collects the related info in a tgz file | Syntax: ${0##*/} namespace" && exit 0
 
@@ -6,12 +7,13 @@ NS="$1"
 [ "$NS" == "" ] && NS="$ENTANDO_NAMESPACE"
 [ "$NS" == "" ] && echo "please provide the namespace name" 1>&2 && exit 1
 
-TT="$PWD/w/diagdata"
+TT="$PWD/diagdata"
 mkdir -p  "$TT"
 cd "$TT"
 
-KUBECTL="sudo k3s kubectl"
-
+#KUBECTL="sudo kubectl"
+KUBECTL="${ENT_KUBECTL:-kubectl}"
+$KUBECTL get nodes
 echo "" > basics.txt
 
 # DNS rebinding protection TEST
@@ -34,10 +36,10 @@ cat /etc/os-release >> basics.txt 2>&1
 echo "# Routes" >> basics.txt
 ip r s >> basics.txt 2>&1
 
-# PODs informations collection
+# PODs information collection
 echo "## K8S INFO"
 
-for pod in $($KUBECTL get pods -n $NS | awk 'NR>1' | awk '{print $1}'); do
+for pod in $($KUBECTL get pods -n "$NS" | awk 'NR>1' | awk '{print $1}'); do
    echo "> POD: $pod"
    $KUBECTL describe pods/"$pod" -n "$NS" 1> "$pod.describe.txt" 2>&1
    for co in $($KUBECTL get pods/"$pod" -o jsonpath='{.spec.containers[*].name}{"\n"}' -n "$NS"); do
@@ -48,6 +50,6 @@ done
 
 cd ..
 set +e
-echo tar cfz entando-diagdata.tgz "diagdata"
+tar cfz entando-diagdata.tgz "diagdata"
 
 echo "Collected log available under \"$TT\" for consultation"

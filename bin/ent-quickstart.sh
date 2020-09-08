@@ -26,24 +26,24 @@ $JUST_SET_CFG || {
   case "$1" in
     "--simple"|--simple=*)
       AUTO_ADD_ADDR=false
-      [[ $1 =~ --addr=(.*) ]] && {
+      if [[ $1 =~ --addr=(.*) ]]; then
         set_nn_ip ADDR "${BASH_REMATCH[1]}"
-      } || {
+      else
         ADDR="$(hostname -I | awk '{print $1}')"
-      }
+      fi
       shift;;
-    "--add-addr"|--add-addr=*)
+    "--dedicated"|--dedicated=*)
       AUTO_ADD_ADDR=true
-      [[ $1 =~ --add-addr=(.*) ]] && {
+      if [[ $1 =~ --dedicated=(.*) ]]; then
         set_nn_dn ADDR "${BASH_REMATCH[1]}"
-      } || {
+      else
         ADDR=$C_DEF_CUSTOM_IP
-      }
+      fi
       shift;;
     *)
       echo -e "Please provide a valid \"addr-mode\" mode option:" 1>&2 
       echo "  --simple=[ADDR]   => standard installation with an existing ip" 1>&2 
-      echo "  --add-addr=[ADDR] => automatically adds an IP on the host (ony netplan)" 1>&2 
+      echo "  --dedicated=[ADDR] => automatically adds an IP on the OS (only netplan)" 1>&2
       echo "" 1>&2 
       echo "NOTE: if \"ADDR\" is not provided one is automatically determined" 1>&2 
       echo "" 1>&2 
@@ -62,7 +62,7 @@ shift
 _log_i 2 "> Checking environment"
 
 $JUST_SET_CFG || {
-  . bin/ent-environment-check.sh kube
+  . bin/ent-envcheck.sh kube
 }
 
 save_cfg_value "ENTANDO_NAMESPACE" "$ENTANDO_NAMESPACE"
@@ -109,7 +109,7 @@ ask "Should I start the deployment?" && {
 }
 
 ask "Should I start the monitor?" && {
-  ent-app-info.sh watch
+  ent-app-info.sh watch || true
 } || {
   echo -e "\n~~~\nUse the command:\n  - ent-app-info.sh watch\nto check the status of the app"
 }

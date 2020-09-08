@@ -56,7 +56,7 @@ ENT_RUN_TMP_DIR=$(mktemp /tmp/ent.run.XXXXXXXXXXXX)
 
 exit-trap() { 
   xu_get_status
-  sz=$(stat --printf="%s" "$ENT_RUN_TMP_DIR")
+  sz=$(stat -c "%s" "$ENT_RUN_TMP_DIR")
 
   if [ "$sz" -eq 0 ] || { [ "$XU_RES" != "FATAL" ] && [ "$XU_RES" != "USER-ERROR" ]; }; then
     [[ ! "$ENT_RUN_TMP_DIR" =~ /tmp/ ]] && {

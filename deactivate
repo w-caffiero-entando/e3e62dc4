@@ -23,7 +23,7 @@ if [[ "$sourced" == "0" ]]; then
 fi
 
 [ "$ENTANDO_ENT_ACTIVE" = "" ] && echo "No instance is currently active" && return 99
-[ "$ENTANDO_ENT_ACTIVE" != "$DIR" ] && {
+if [ "$ENTANDO_ENT_ACTIVE" != "$DIR" ]; then
   if [ "$1" = "--force" ]; then
     echo "Forcing deactivation of instance $ENTANDO_ENT_ACTIVE"
     DEA="$ENTANDO_ENT_ACTIVE"
@@ -31,7 +31,9 @@ fi
     echo "This instance is not currently active (you may want to use --force)" && return 99
     DEA="$DIR"
   fi
-}
+else
+  DEA="$ENTANDO_ENT_ACTIVE"
+fi
 
 unset ENTANDO_ENT_ACTIVE
 PATH="${PATH//$DEA\/bin:/}"

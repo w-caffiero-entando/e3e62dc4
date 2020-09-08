@@ -25,14 +25,17 @@ _run the dependencies checker_
 ## On the fly:
 
 ```
-curl https://<ent-url>/auto-install | ENT_VERSION=[version-tag] bash
+curl https://<ent-url>/auto-install | ENTANDO_RELEASE=[entando-release-tag] bash
 ```
+
+please note that the ENTANDO_RELEASE is the tag of the Entando release under:  
+`https://github.com/entando/entando-releases/`
 
 ## Manual download:
 
 _clone/download the project and then:_
 ```
-<ent-path>/auto-install [version-tag]
+<ent-path>/auto-install [entando-release-tag]
 ```
 
 # Help
@@ -53,7 +56,7 @@ _from bash or a zsh variant_
 ```
 s/    => support scripts and bins
 w/    => work/status dir (gitignored)
-d/    => distribution files
-lab/  => additional dependencies installed by ent
+dist/ => distribution files
+lib/  => additional dependencies installed by ent
 bin/  => the entando cli tools
 ```

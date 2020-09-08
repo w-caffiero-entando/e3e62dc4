@@ -1,6 +1,6 @@
 #!/bin/bash
 
-H() { echo -e "Helps managing the system that hosts the quickstart VM | Syntax: ${0##*/} update-hosts-file ..."; }
+H() { echo -e "Run the internal tests | Syntax: ${0##*/} update-hosts-file ..."; }
 [ "$1" = "-h" ] && H && exit 0
 
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" > /dev/null 2>&1 && pwd)"
@@ -13,7 +13,7 @@ cd "$DIR/.." || {
 
 test_check_ver_num
 
-# CONFIG
+# CONFIG HELPER
 CFG_FILE="/tmp/ent-test"
 
 save_cfg_value "XX1" "hey" "$CFG_FILE"
@@ -30,8 +30,7 @@ reload_cfg "$CFG_FILE"
 [ "$XX4" = "\" && echo \"**INJECTION ATTEMPT**\"\\ / && \"" ] || FATAL "failed! $LINENO"
 [ "$XX5" = "\\\" && echo \"**INJECTION ATTEMPT2**\"\\ / && \\\"" ] || FATAL "failed! $LINENO"
 
-# FIND PAR
-
+# FIND ARG IDX
 index_of_arg "FIND-ME" "A" "B" "C" "FIND-ME" "D"
 [[ $? -eq 4 ]] || FATAL "failed! $LINENO"
 

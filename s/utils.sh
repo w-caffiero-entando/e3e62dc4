@@ -42,7 +42,7 @@ set_or_ask() {
   local dvar="$1"     # destination var to set
   local sval="$2"     # source value
   local prompt="$3"   # (if required) Supports tags %sp (standard prompt) and %var (dest var name)
-  local pdef=$4       # (for the prompt)
+  local pdef="$4"     # (for the prompt)
   local asserter="$5" # assert function (with "?" suffix allows nulls)
 
   _set_var "$dvar" ""
@@ -57,14 +57,18 @@ set_or_ask() {
 
   while true; do
     [ -z "$res" ] && {
-      [ -n "$asserter" ] && "$asserter" "${dvar}_DEFAULT" "$pdef" "silent" && def="$pdef"
+      if [ -n "$asserter" ]; then
+        "$asserter" "${dvar}_DEFAULT" "$pdef" "silent"
+        def="$pdef"
+      else
+        def="$pdef"
+      fi
+
       if [ -n "$def" ]; then
-        echo -ne "$prompt ($def):"
-        read -rp " " res
+        read -rep "$prompt ($def): " res
         [ -z "$res" ] && [ -n "$def" ] && res="$pdef"
       else
-        echo -ne "$prompt:"
-        read -rp " " res
+        read -rep "$prompt: " res
       fi
     }
 
@@ -139,13 +143,15 @@ snake_to_camel() {
   _set_var "$1" "$res"
 }
 
+# Returns the index of the given argument
 index_of_arg() {
-  par="$1"; shift
+  par="$1"
+  shift
   i=1
   while [ "$1" != "$par" ] && [ -n "$1" ] && [ $i -lt 100 ]; do
     i=$((i + 1))
     shift
   done
   [ $i -eq 100 ] && return 0
-  [ -n "$1" ] && return $i || return $((i-1))
+  [ -n "$1" ] && return $i || return $((i - 1))
 }

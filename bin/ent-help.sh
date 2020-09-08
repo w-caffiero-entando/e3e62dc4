@@ -44,7 +44,7 @@ echo -e "  - https://dev.entando.org/"
 echo ""
 echo "> ⚠ RECOMMENDED FIRST STEP ⚠ :"
 
-echo -e "  - Check the dependencies (ent-environment-check.sh -h full-help)"
+echo -e "  - Check the dependencies (ent-envcheck.sh -h full-help)"
 
 
 echo ""
