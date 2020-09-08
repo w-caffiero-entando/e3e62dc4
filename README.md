@@ -25,7 +25,7 @@ _run the dependencies checker_
 ## On the fly:
 
 ```
-curl https://<ent-url>/auto-install | ENT_VERSION=[version-tag] bash
+curl https://<ent-url>/auto-install | ENTANDO_RELEASE=[git-tag-of-the-entando-release] bash
 ```
 
 ## Manual download:
